@@ -3,7 +3,7 @@ from utils.gl_color import color
 import struct
 import random
 import numpy as np
-from utils.gl_math import norm, PI,  V2, V3, substract, dot, cross, substractNPArray, dotNPArray, normNPArray, multiN, multColor, sumNPArray
+from utils.gl_math import norm, PI,  V2, V3, substract, dot, cross, substractNPArray, dotNPArray, normNPArray, multiplyConstant, multiplyColor, sumNPArray
 from numpy import matrix, cos, sin, tan
 
 from obj import Obj
@@ -237,7 +237,7 @@ class Raytracer(object):
 
             # R = 2 * (N dot L) * N - L
             reflect = 2 * dotNPArray(intersect.normal, light_dir)
-            reflect = multiN(reflect, intersect.normal)
+            reflect = multiplyConstant(reflect, intersect.normal)
             reflect = substractNPArray(reflect, light_dir)
 
             # spec_intensity: lightIntensity * ( view_dir dot reflect) ** specularidad
@@ -255,7 +255,7 @@ class Raytracer(object):
 
         # Formula de iluminacion
         # finalColor = (ambientColor + (1 - shadow_intensity) * (diffuseColor + specColor)) * objectColor
-        finalColor = multColor(sumNPArray(ambientColor, multiN((1 - shadow_intensity),sumNPArray(diffuseColor, specColor))),objectColor)
+        finalColor = multiplyColor(sumNPArray(ambientColor, multiplyConstant((1 - shadow_intensity),sumNPArray(diffuseColor, specColor))),objectColor)
         #Nos aseguramos que no suba el valor de color de 1
 
         r = min(1,finalColor[0])
