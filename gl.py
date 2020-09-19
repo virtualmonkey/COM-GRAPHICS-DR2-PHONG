@@ -3,7 +3,7 @@ from utils.gl_color import color
 import struct
 import random
 import numpy as np
-from utils.gl_math import norm, PI,  V2, V3
+from utils.gl_math import norm, PI,  V2, V3, substract, dot, cross, substractNPArray, dotNPArray, normNPArray, multiN, multColor, sumNPArray
 from numpy import matrix, cos, sin, tan
 
 from obj import Obj
@@ -205,57 +205,57 @@ class Raytracer(object):
 
     def pointColor(self, material, intersect):
 
-        objectColor = np.array([material.diffuse[2] / 255,
+        objectColor = [material.diffuse[2] / 255,
                                 material.diffuse[1] / 255,
-                                material.diffuse[0] / 255])
+                                material.diffuse[0] / 255]
 
-        ambientColor = np.array([0,0,0])
-        diffuseColor = np.array([0,0,0])
-        specColor = np.array([0,0,0])
+        ambientColor = [0,0,0]
+        diffuseColor = [0,0,0]
+        specColor =[0,0,0]
 
         shadow_intensity = 0
 
         if self.ambientLight:
-            ambientColor = np.array([self.ambientLight.strength * self.ambientLight.color[2] / 255,
+            ambientColor = [self.ambientLight.strength * self.ambientLight.color[2] / 255,
                                      self.ambientLight.strength * self.ambientLight.color[1] / 255,
-                                     self.ambientLight.strength * self.ambientLight.color[0] / 255])
+                                     self.ambientLight.strength * self.ambientLight.color[0] / 255]
 
         if self.pointLight:
             # Sacamos la direccion de la luz para este punto
-            light_dir = np.subtract(self.pointLight.position, intersect.point)
-            light_dir = light_dir / np.linalg.norm(light_dir)
+            light_dir = substractNPArray(self.pointLight.position, intersect.point)
+            light_dir = normNPArray(light_dir)
 
             # Calculamos el valor del diffuse color
-            intensity = self.pointLight.intensity * max(0, np.dot(light_dir, intersect.normal))
-            diffuseColor = np.array([intensity * self.pointLight.color[2] / 255,
+            intensity = self.pointLight.intensity * max(0, dotNPArray(light_dir, intersect.normal))
+            diffuseColor = [intensity * self.pointLight.color[2] / 255,
                                      intensity * self.pointLight.color[1] / 255,
-                                     intensity * self.pointLight.color[2] / 255])
+                                     intensity * self.pointLight.color[2] / 255]
 
             # Iluminacion especular
-            view_dir = np.subtract(self.camPosition, intersect.point)
-            view_dir = view_dir / np.linalg.norm(view_dir)
+            view_dir = substractNPArray(self.camPosition, intersect.point)
+            view_dir = normNPArray(view_dir)
 
             # R = 2 * (N dot L) * N - L
-            reflect = 2 * np.dot(intersect.normal, light_dir)
-            reflect = np.multiply(reflect, intersect.normal)
-            reflect = np.subtract(reflect, light_dir)
+            reflect = 2 * dotNPArray(intersect.normal, light_dir)
+            reflect = multiN(reflect, intersect.normal)
+            reflect = substractNPArray(reflect, light_dir)
 
             # spec_intensity: lightIntensity * ( view_dir dot reflect) ** specularidad
-            spec_intensity = self.pointLight.intensity * (max(0, np.dot(view_dir, reflect)) ** material.spec)
+            spec_intensity = self.pointLight.intensity * (max(0, dotNPArray(view_dir, reflect)) ** material.spec)
 
-            specColor = np.array([spec_intensity * self.pointLight.color[2] / 255,
+            specColor = [spec_intensity * self.pointLight.color[2] / 255,
                                   spec_intensity * self.pointLight.color[1] / 255,
-                                  spec_intensity * self.pointLight.color[0] / 255])
+                                  spec_intensity * self.pointLight.color[0] / 255]
 
             for obj in self.scene:
                 if obj is not intersect.sceneObject:
                     hit = obj.ray_intersect(intersect.point,  light_dir)
-                    if hit is not None and intersect.distance < np.linalg.norm(np.subtract(self.pointLight.position, intersect.point)):
+                    if hit is not None and intersect.distance < np.linalg.norm(substractNPArray(self.pointLight.position, intersect.point)):
                         shadow_intensity = 1
 
         # Formula de iluminacion
-        finalColor = (ambientColor + (1 - shadow_intensity) * (diffuseColor + specColor)) * objectColor
-
+        # finalColor = (ambientColor + (1 - shadow_intensity) * (diffuseColor + specColor)) * objectColor
+        finalColor = multColor(sumNPArray(ambientColor, multiN((1 - shadow_intensity),sumNPArray(diffuseColor, specColor))),objectColor)
         #Nos aseguramos que no suba el valor de color de 1
 
         r = min(1,finalColor[0])

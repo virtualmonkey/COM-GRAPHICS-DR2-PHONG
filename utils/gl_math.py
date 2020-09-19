@@ -1,4 +1,5 @@
 from collections import namedtuple
+import numpy as np
 
 
 V2 = namedtuple('Point2', ['x', 'y'])
@@ -12,6 +13,39 @@ def deg2rad(degrees):
 
 def substract(v0, v1):
     return V3(v0.x - v1.x, v0.y - v1.y, v0.z - v1.z)
+
+def sumNPArray(m1, m2):
+    res=[]
+    res.append(m1[0]+m2[0])
+    res.append(m1[1]+m2[1])
+    res.append(m1[2]+m2[2])
+    return res
+
+def substractNPArray(v0, v1):
+    return [v0[0] - v1[0], v0[1] - v1[1], v0[2] - v1[2]]
+
+def normNPArray (v0):
+    vLength = lengthNPArray(v0)
+    if not vLength:
+        return [0, 0, 0]
+
+    return [v0[0]/vLength, v0[1]/vLength, v0[2]/vLength]
+    
+def dotNPArray(v0, v1):
+    return v0[0] * v1[0] + v0[1] * v1[1] + v0[2] * v1[2]
+
+def lengthNPArray(v0):
+    return (v0[0]**2 + v0[1]**2 + v0[2]**2)**0.5
+
+def multiN(c, normal):
+    return [normal[0]*c,normal[1]*c,normal[2]*c]
+
+def multColor(v1,v2):
+    res=[]
+    res.append(v1[0]*v2[0])
+    res.append(v1[1]*v2[1])
+    res.append(v1[2]*v2[2])
+    return res
 
 def norm(v0):
     vLength = length(v0)
